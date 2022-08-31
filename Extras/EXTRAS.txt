@@ -1,0 +1,386 @@
+@app.route('/complete')
+def complete():
+    
+    return render_template('complete.html',data=urls)
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+
+    <title>Hello, world!</title>
+  </head>
+  <body>
+    <h1>Hello, world!</h1>
+
+    <!-- Optional JavaScript; choose one of the two! -->
+
+    <!-- Option 1: Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+
+    <!-- Option 2: Separate Popper and Bootstrap JS -->
+    <!--
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js" integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13" crossorigin="anonymous"></script>
+    -->
+  </body>
+</html>
+
+
+////house rate
+import os
+import pandas as pd
+import pickle
+
+data = pd.read_csv('/content/drive/MyDrive/Task/cleaneddata.csv')
+pipe=pickle.load(open("/content/drive/MyDrive/Task/house.pkl","rb"))
+
+
+@app.route('/houserateprediction',methods=['POST','GET'])
+def predictionpage():
+    return render_template('housepred.html')
+
+            
+@app.route('/predict',methods=['POST','GET'])
+def predict():
+    sqft=request.form.get("sf")
+    park=request.form.get("parking")
+    bedrooms=request.form.get("bedrooms")
+    batroom=request.form.get("bathroom")
+    stor=request.form.get("stories")
+    if sqft=='' or bedrooms=='' or batroom=='' or stor=='' or park=='':
+        return " ---- (Please fill all the feilds)"
+
+    input=pd.DataFrame([[sqft,bedrooms,batroom,stor,park]],columns=['area','bedrooms','bathrooms','stories','parking'])
+    predic=pipe.predict(input)[0]
+    #print(sqft,bedrooms,batroom,stor,park)
+    
+    return str(predic)
+
+
+//////////
+
+<<<<<<<<<|||complete code for analysis|||>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+#//1
+#color names
+
+hexcodes = []
+colornames = []
+
+for cname, hex in matplotlib.colors.cnames.items():
+    hexcodes.append(hex)
+    colornames.append(cname)
+    #print(hex,cname)
+
+zipbObj = zip(hexcodes, colornames)
+new_hex_colors = dict(zipbObj)
+
+def RGB2HEX(color):
+    return "#{:02x}{:02x}{:02x}".format(int(color[0]), int(color[1]), int(color[2]))
+#//2
+def closer_color(image):
+    hexnames = new_hex_colors
+    names = []
+    positions = []
+    
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    dst = cv2.fastNlMeansDenoisingColored(image,None,10,10,7,21)
+    modified_image = cv2.resize(dst, (600, 400), interpolation = cv2.INTER_AREA)
+    
+    input_image = image.reshape(image.shape[0]*image.shape[1], 3)
+    clf = KMeans(n_clusters = 1)
+    labels = clf.fit_predict(input_image)
+    counts = Counter(labels)
+
+    center_colors = clf.cluster_centers_
+    
+    ordered_colors = [center_colors[i] for i in counts.keys()]
+    hex_colors = [RGB2HEX(ordered_colors[i]) for i in counts.keys()]
+    rgb_colors = [ordered_colors[i] for i in counts.keys()]
+    
+    for i in hexnames:
+        names.append(hexnames[i])
+        positions.append(webcolors.hex_to_rgb(i))
+        
+    spacedb = KDTree(positions)
+
+    x = rgb_colors
+    
+    x[0] = [int(i) for i in x[0]]
+    dist, index = spacedb.query(x[0])
+    
+    return names[index]
+#//3
+#loading object detection model
+def object_detection():
+    model = torch.hub.load("/content/drive/MyDrive/Task/object_detection_model", 'yolov5s', source = 'local') 
+    return model
+#//4
+object_model = object_detection()
+
+#//5
+def highlightFace(net, frame, conf_threshold=0.7):
+    frameOpencvDnn=frame.copy()
+    frameHeight=frameOpencvDnn.shape[0]
+    frameWidth=frameOpencvDnn.shape[1]
+    blob=cv2.dnn.blobFromImage(frameOpencvDnn, 1.0, (300, 300), [104, 117, 123], True, False)
+
+    net.setInput(blob)
+    detections=net.forward()
+    faceBoxes=[]
+    for i in range(detections.shape[2]):
+        confidence=detections[0,0,i,2]
+        if confidence>conf_threshold:
+            x1=int(detections[0,0,i,3]*frameWidth)
+            y1=int(detections[0,0,i,4]*frameHeight)
+            x2=int(detections[0,0,i,5]*frameWidth)
+            y2=int(detections[0,0,i,6]*frameHeight)
+            faceBoxes.append([x1,y1,x2,y2])
+            cv2.rectangle(frameOpencvDnn, (x1,y1), (x2,y2), (0,255,0), int(round(frameHeight/150)), 8)
+    return frameOpencvDnn,faceBoxes
+
+faceProto="gender_age_detection_model/opencv_face_detector.pbtxt"
+faceModel="gender_age_detection_model/opencv_face_detector_uint8.pb"
+
+ageProto="gender_age_detection_model/age_deploy.prototxt"
+ageModel="gender_age_detection_model/age_net.caffemodel"
+
+genderProto="gender_age_detection_model/gender_deploy.prototxt"
+genderModel="gender_age_detection_model/gender_net.caffemodel"
+
+MODEL_MEAN_VALUES=(78.4263377603, 87.7689143744, 114.895847746)
+ageList=['(0-2)', '(4-6)', '(8-12)', '(15-20)', '(25-32)', '(38-43)', '(48-53)', '(60-100)']
+genderList=['Male','Female']
+
+faceNet=cv2.dnn.readNet(faceModel,faceProto)
+ageNet=cv2.dnn.readNet(ageModel,ageProto)
+genderNet=cv2.dnn.readNet(genderModel,genderProto)
+
+padding=20
+
+
+def age_gender_detector(temp):
+  obj_frame_no= []
+  object_name = []
+  color_name = []
+  gender_name =[]
+  age_group = []
+  gender_frame_no = []
+  fn = 0
+  
+  for num in range(len(temp)):
+    im = temp[num]
+    frame = cv2.imread(im)
+    print(f"image number:{im}")
+    fn += 1
+    
+
+    t=time.time()
+    resultImg,faceBoxes=highlightFace(faceNet,frame)
+    return_data1 = []
+    return_data2 = []
+    return_data3 = []
+    
+    
+    if not faceBoxes:
+      gender_name.append("NaN")
+      age_group.append("NaN")
+      gender_frame_no.append(fn)
+      print("No face detected") 
+    
+        
+    for faceBox in faceBoxes:
+        print(faceBox)
+        face=frame[max(0,faceBox[1]-padding):
+                  min(faceBox[3]+padding,frame.shape[0]-1),max(0,faceBox[0]-padding)
+                  :min(faceBox[2]+padding, frame.shape[1]-1)]
+        a = max(0,faceBox[1]-padding)
+        b = min(faceBox[3]+padding,frame.shape[0]-1)
+        c = max(0,faceBox[0]-padding)
+        d = min(faceBox[2]+padding, frame.shape[1]-1)
+        print("CHECKING THE FACE FRAME", len(face), 
+              "\n", max(0,faceBox[1]-padding), 
+              "\t", min(faceBox[3]+padding,frame.shape[0]-1), 
+              "\n", max(0,faceBox[0]-padding), 
+              "\t", min(faceBox[2]+padding, frame.shape[1]-1))
+        if(len(face) != 0) and (a != b and c != d): 
+          print(a,c, "\n")
+          print(b,d)
+          if(a>b and c>d) or (a<b and c<d):
+            blob=cv2.dnn.blobFromImage(face, 1.0, (227,227), MODEL_MEAN_VALUES, swapRB=False)
+
+        #running gender detection model
+        genderNet.setInput(blob)
+        genderPreds=genderNet.forward()
+        gender=genderList[genderPreds[0].argmax()]
+        #print("Gender Type", type(gender))
+        #running age detection model
+        ageNet.setInput(blob)
+        agePreds=ageNet.forward()
+        age=ageList[agePreds[0].argmax()]
+        gender_name.append(gender)
+        age_group.append(age)
+        gender_frame_no.append(fn)
+        color_name.append(closer_color(frame))
+        results = object_model(frame)
+        objects = results.pandas().xyxy[0]
+        for i in objects["name"]:
+          obj_frame_no.append(fn)
+          object_name.append(i)
+        label = "{},{}".format(gender, age)
+        cv2.putText(resultImg, f'{gender}, {age}', (faceBox[0], faceBox[1]-10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,255,255), 2, cv2.LINE_AA)
+        #cv2.imshow("Age Gender Demo", resultImg)
+        #print("Gender", gender_name)
+        
+    return_data1 = pd.DataFrame({'gender_frame':gender_frame_no,'gender_name': gender_name,'age_group': age_group})#[gender_frame_no, gender_name, age_group]
+    return_data2 = pd.DataFrame({'object_name': object_name})
+    return_data3 = pd.DataFrame({'color_name':color_name})
+   # return resultImg
+  #name = "DataFrame.xlsx"
+  #return_data1.to_excel(name)
+  return return_data1,return_data2,return_data3
+
+#//6
+folders_path = "/content/drive/MyDrive/Task/save"
+video_frames_dir = []
+vidframe_list1 =[]
+vidframe_list2 =[]
+vidframe_list3 =[]
+vidframe_list4 =[]
+# vidframe_list5 = []
+
+for root, subdirectories, files in os.walk(folders_path):
+    for subdirectory in subdirectories:
+        video_frames_dir.append(os.path.join(root, subdirectory))
+
+#//7
+for x in os.listdir(video_frames_dir[0]):
+    vidframe_list1.append(os.path.join(video_frames_dir[0],x)) 
+
+for x in os.listdir(video_frames_dir[1]):
+    vidframe_list2.append(os.path.join(video_frames_dir[1],x))  
+
+#for x in os.listdir(video_frames_dir[2]):
+    #vidframe_list3.append(os.path.join(video_frames_dir[2],x)) 
+
+#for x in os.listdir(video_frames_dir[3]):
+    #vidframe_list4.append(os.path.join(video_frames_dir[3],x)) 
+
+#//8
+all_list = [vidframe_list1,vidframe_list2]  #,vidframe_list3,vidframe_list4
+
+#//9
+for j in range(0, len(all_list)):
+  temp = all_list[j]
+  print("Folder Number: ", j+1)
+  gender_details,object_details,color_details = age_gender_detector(temp)
+  print("done")
+  excel_name = "Folder_" + str(j+1) + ".xlsx"
+  excelfile = pd.ExcelWriter(excel_name)
+  gender_details.to_excel(excelfile, "Gender")
+  object_details.to_excel(excelfile, "Object")
+  color_details.to_excel(excelfile, "Color")
+  excelfile.save()
+#//10
+video_files = glob(r"/content/drive/MyDrive/Task/*.mp4")
+len(video_files)
+print(video_files)
+
+#//12
+from mtcnn import MTCNN
+face_detector = FER(mtcnn=True)
+for vid in range(0,len(video_files)):
+  temp1 = video_files[vid]
+  input_video = Video(temp1)
+  processing_data = input_video.analyze(face_detector, display=False)
+  print(processing_data)
+  vid_df = input_video.to_pandas(processing_data)
+  vid_df = input_video.get_first_face(vid_df)
+  vid_df = input_video.get_emotions(vid_df)
+  angry = sum(vid_df.angry)
+  disgust = sum(vid_df.disgust)
+  fear = sum(vid_df.fear)
+  happy = sum(vid_df.happy)
+  sad = sum(vid_df.sad)
+  surprise = sum(vid_df.surprise)
+  neutral = sum(vid_df.neutral)
+  emotions = ['Angry', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
+  emotions_values = [angry, disgust, fear, happy, sad, surprise, neutral]
+  score_comparisons = pd.DataFrame(emotions, columns = ['Human Emotions'])
+  score_comparisons['Emotion Value'] = [round(x,2) for x in emotions_values]
+  score_comparisons.sort_values(by = ['Emotion Value'],inplace = True, ascending = False)
+  print(score_comparisons)
+  excel_name = "/content/drive/MyDrive/Task/Emotions_Folder_" + str(vid+1) + ".xlsx"
+  excelfile = pd.ExcelWriter(excel_name)
+  score_comparisons.to_excel(excelfile, "Emotions")
+  excelfile.save()
+
+
+##html till analyze
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>VIDEO RECOMMENDATION SYSTEM</title>
+  </head>
+
+  <body>
+    <div class="col-md-12 form-group" style="text-align: center;">
+            <h1>AdTech-AI POWERED INTELLIGENT VIDEO RECOMMENDATION SYSTEM</h1>
+            <form action="/submit" class="main" method="post">
+                <label for="Enter_keyword"><b>Enter keyword:</b></label><br>
+                <input type="text" id="keyword" name="keyword" placeholder="enter here">
+                <input class="btn btn-primary" type="submit" value="Submit">
+                <p>Please click Submit button to start downloading</p>
+                
+                <br>
+                <b>LINKS:</b>
+                <tbody>
+                
+                    {% for link in urls %}
+                        <th></th>
+                        <td><a href= {{link}}>{{link}}</a></td><br>
+                    {% endfor %} 
+                </tbody>
+                <br>    
+            </form>
+            <br><br>
+            <form action="/upload" method="post" enctype="multipart/form-data">
+                <label for="upload">Upload Reference video: </label>
+                <input type="file" placeholder="only mp4" name="video" accept="video/*"><br>
+                <input type="submit" value="upload"><br>
+                {{msg}}<br>
+            </form>
+      
+    </div>   
+    <form action="/analyze" class="analyze" method="post">
+                {%if status==2%}
+                <input class="analyze" type="submit" value="Analyze">
+                <br>              
+                {%else%}
+                <p>Please refresh the page if the <b>Analyze</b> is not visble even after uploading video</p>
+                {%endif%}
+    </form>
+
+
+    <form action="/status" class="status" method="post">
+                {%if ana_status==1%}    
+                  <p>Please wait, processing... check status after a while</p>       
+                {%else%}
+                  <p><b>Done..</b></p>
+                {%endif%}
+    </form>
+              
+            
+      
+  </body>
+  
+</html>

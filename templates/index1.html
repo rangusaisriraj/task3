@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIDEO RECOMMENDATION SYSTEM</title>
+</head>
+<style>
+    * {
+        padding: 0;
+        margin: 0;
+    }
+
+    #div1 {
+        margin: 20px;
+        margin-left: 5vw;
+        margin-right: 5vw;
+        height: 90vh;
+        padding: 10px;
+        background-color: grey;
+        border: 2px solid black;
+        position: relative;
+    }
+
+    h1 {
+        margin-left: 10vw;
+    }
+
+    h1,
+    h2 {
+        display: inline;
+        font-size: 25px;
+        padding-bottom: 15px;
+        text-align: center;
+    }
+
+    .main {
+        position: relative;
+        background-color: white;
+        display: inline-block;
+        border: 2px solid black;
+        border-radius: 10px;
+    }
+
+    #links {
+        position: absolute;
+        top: 40vh;
+        left: 1%;
+        width: 40vw;
+        padding: 10px;
+        display: inline-block;
+        background-color: white;
+        border: 2px solid black;
+        border-radius: 10px;
+    }
+
+    label {
+        font-size: 15px;
+    }
+
+    li {
+        display: inline-block;
+    }
+
+    .btn,
+    #keyword,
+    #location {
+        display: inline-block;
+        margin: 10px;
+        max-width: 30vw;
+        width: 15vw;
+        height: 5vh;
+        border: 2px solid black;
+    }
+
+    #results {
+        position: absolute;
+        right: 5vw;
+        top: 85vh;
+        display: inline-block;
+        margin: 10px;
+        max-width: 30vw;
+        width: 15vw;
+        height: 5vh;
+        border: 2px solid black;
+    }
+
+    .submit {
+        display: inline-block;
+        margin: 10px;
+        width: 5vw;
+        height: 5vh;
+        border-radius: 3px;
+        background-color: grey;
+        /* border: 2px solid black; */
+    }
+
+    .file {
+        width: 15vw;
+    }
+
+    #analyze {
+        margin-left: 45%;
+        height: 7vh;
+        width: 6vw;
+    }
+
+    #d_video {
+        width: 40vw;
+        padding: 10px;
+        display: inline-block;
+    }
+
+    #u_video {
+        position: absolute;
+        padding: 10px;
+        margin-top: 0px;
+        width: 40vw;
+        margin-left: 1.5vw;
+        height: 25/2vh;
+    }
+
+    #ana_status {
+        padding: 10px;
+        position: absolute;
+        margin-left: 1.5vw;
+        margin-top: 25vh;
+        width: 40vw;
+    }
+
+    #trends1,
+    #trends2 {
+        background-color: grey;
+        color: white;
+    }
+    .container1{
+	position:relative;
+	display:none;
+	width:150px;
+	height:70px;
+	border:0px dotted #555;
+	paddig:10px;
+	margin-top:10px;
+	}
+.loader1{
+	position: absolute;
+	display:none;
+	top:0;
+	left:0;
+	width:100%;
+	height:100%;
+	background:rgba(255, 255, 255, 0) url('http://i.stack.imgur.com/FhHRx.gif') no-repeat 50%;
+	}
+</style>
+<script>
+function demoDisplay() {
+  document.getElementById("myP1").style.display = "block";
+document.getElementById("myP2").style.display = "block";
+document.getElementById("myP3").style.display = "none";
+document.getElementById("myP4").style.display = "none";
+document.getElementById("myP5").style.display = "none";
+document.getElementById("myP6").style.display = "none";
+document.getElementById("myP7").style.display = "none";
+};
+    function validateForm() {
+        let x = document.forms["download_videos"]["keyword"].value;
+        if (x == "") {
+            alert("Please enter the keyword");
+            return false;
+        } else {
+            change_msg1()
+        }
+        document.getElementById("myP1").style.display = "block";
+document.getElementById("myP2").style.display = "block";
+document.getElementById("myP3").style.display = "none";
+document.getElementById("myP4").style.display = "none";
+document.getElementById("myP5").style.display = "none";
+document.getElementById("myP6").style.display = "none";
+document.getElementById("myP7").style.display = "none";
+document.getElementById("myP8").style.display = "none";
+    }
+    function change_msg1() {
+        document.getElementById("msg1").textContent = "Click on check status to check the status"
+    }
+    function change_msg2() {
+        document.getElementById("msg2").textContent = "Running..."
+    }
+
+</script>
+
+<body>
+    {{img_names}}
+    {% for i in img_names %}
+    <img src="{{url_for(filename=i)}}">
+    {% endfor %}
+
+    <div class=" col-md-12 form-group" id="div1">
+        <h1>AI Powered Advertisement</h1>
+        <h2>-Intelligent Video Recommendation System for ADTech</h2>
+        <form name="download_videos" action="/submit" class="main" id="d_video" method="post">
+            <h3>Benchmarking Reference</h3>
+            <label for="Enter_keyword"><b>Enter Keyword:</b></label>
+            <input type="text" id="keyword" name="keyword" placeholder="enter here" required><br>
+            <label for="location"><b>Enter Location:</b></label>
+            <select name="location" id="location" required>
+                <option value="india">India</option>
+                <option value="united states">United States of America</option>
+                <option value="australia">Australia</option>
+            </select>
+            <input onclick="validateForm()" class="submit" type="submit" value="Submit">
+            <p id ="myP8">Please Click Submit Button </p>
+        </form>
+            <div></div><div id="myP2" class="container1">
+    					Video Downloading ...
+    		<div id="myP1" class="loader1"></div>
+    		<p id ="myP3">{{msg}}</p>
+    			<p id ="myP4"><a href={{data1}}>{{data1}}</a></p>
+    			<p id ="myP5"><a href={{data2}}>{{data2}}</a></p>
+    			<p id ="myP6"><a href={{data3}}>{{data3}}</a></p>
+    			<p id ="myP7"><a href={{data4}}>{{data4}}</a></p>
+		</div>
+        <form action="/status_download" class="main" id="links" method="post">
+            <input class="status" type="submit" value="Check status"><br>
+            <span id="msg1">Please click Submit button to start downloading benchmark video</span><br>
+            
+            {% if count == 0 %}
+            <p><b>Downloading First Video</b></p>
+            {% endif %}
+            {% if count == 1 %}
+            <p><b>Downloading Second Video</b></p>
+            {% endif %}
+            {% if count == 2 %}
+            <p><b>Downloading Third Video</b></p>
+            {% endif %}
+            {% if count == 3 %}
+            <p><b>Downloading Fourth Video</b></p>
+            {% endif %}
+            {% if count == 4 %}
+            <p><b>Downloaded all videos, proceed to uploading Reference video</b></p>
+            {% endif %}
+            <span>Source Links:</span><br>
+            <div id="disp_links">
+                <ol>
+                    {% for link in urls %}
+                    <li><a href={{link}}>{{link}}</a></li><br>
+                    {% endfor %}
+                </ol>
+            </div>
+        </form>
+        <form action="/upload" class="main" id="u_video" method="post" enctype="multipart/form-data">
+            <label for="upload"><b> Upload Reference video:</b> </label>
+            <input type="file" class="file" placeholder="only mp4" name="video" accept="video/*" required><br>
+            <input type="submit" class="submit" value="Upload"><br>
+            {{msg}}<br>
+        </form>
+        <div class="main" id="ana_status">
+            <form action="/analyze" class="analyse" method="post">
+                {% if 1==status  or 0==status %}
+                <p>Complete the previous steps to show Analyze button</p>
+                {% elif status==2 %}
+                <input type="submit" id="analyze" class="submit" value="Analyze"><br>
+                {% elif status==3 %}
+                <p>Performing Analysis Please Wait...</p>
+                {% else %}
+                <p>Please refresh the page if the <b>Analyze</b> is not visble even after uploading video<p>
+                {% endif %}
+            </form>
+            <form action="/status" class="status" method="post">
+                <br>
+                <input class="status" type="submit" value="Check status" onclick="change_msg2()">
+                {% if ana_status==3 %}
+                <p><b>Done..</b></p>
+                {% else %}
+                <span id="msg2"></span>
+                {% endif %}
+            </form>
+        </div>
+        <form action="/results" method="post">
+            {% if ana_status==3 %}
+            <input type="submit" id="results" value="results">
+            {% endif %}
+        </form>
+        {% for table in table1 %}
+        <div id="trends1"><br>{{ table|safe }}</div>
+        {% endfor %}<br>
+        {% for table in table2 %}
+        <div id="trends2">{{ table|safe }}</div>
+        {% endfor %}
+    </div>
+</body>
+
+</html>

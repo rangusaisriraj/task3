@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Results</title>
+</head>
+<style>
+    .plots{
+        width: 35%;
+        height: 20%;
+        border: 2px solid black;
+        margin: 20px;
+        margin-left: 20px;
+    }
+    h1{
+        text-align: center;
+        text-decoration: underline;
+    }
+    .main {
+        text-align: center;
+        position: relative;
+        background-color: white;
+        display: inline-block;
+        border: 2px solid black;
+        border-radius: 10px;
+    }
+</style>
+<body>
+<div id="obj_plots">
+    <h1>Object Visualization Plots</h1>
+    <p>Video 1 is Benchmark video</p>
+    <p>Video 2 to 5 is Downloaded video from source</p>
+    <p></p>
+    {% for obj in object_path %}
+        <img class="plots" src = "{{ url_for('static', filename=obj)}}">
+    {% endfor %}
+    
+</div>
+<div id="obj_recommendation">
+    {% for msg in obj_msg %}
+       <p>{{msg}}</p>
+    {% endfor %}
+</div>
+<div id="gender_plots">
+    <h1>Gender & Age Detection Plots</h1>
+    {% for gender in gender_path %}
+        <img class="plots" src = "{{ url_for('static', filename=gender)}}">
+    {% endfor %}
+</div>
+<div id="gender_recommendation">
+    {% for gmsg in gender_msg %}
+       <p>{{gmsg}}</p>
+    {% endfor %}
+</div>
+<div id="color_plots">
+    <h1>Color Detection Plots</h1>
+    {% for color in color_path %}
+        <img class="plots" src = "{{ url_for('static', filename=color)}}">
+    {% endfor %}
+</div>
+<div id="emo_plots">
+    <h1>Emotion Detection Plots</h1>
+    {% for emo in emotion_path %}
+        <img class="plots" src = "{{ url_for('static', filename=emo)}}">
+    {% endfor %}
+</div>
+<div id="emotion_recommendation">
+    {% for remo in Emo_rec %}
+       <p>{{remo}}</p>
+    {% endfor %}
+</div>
+<div id="music_plots">
+    <h1>Music Plots</h1>
+    {% for music in music_path %}
+        <img class="plots" src = "{{ url_for('static', filename=music)}}">
+    {% endfor %}
+</div>
+<div id="World_cloud">
+    <h1>World Cloud</h1>
+    {% for wrd in word_cloud %}
+        <img class="plots" src = "{{ url_for('static', filename=wrd)}}">
+    {% endfor %}
+</div>
+<div class="main">
+    <h1>Top trends</h1>
+        <div><p>Top trending news in {{location}}</p></div>
+        
+        {% for table in table1 %}
+        <div id="trends1"><br>{{ table|safe }}</div>
+        {% endfor %}<br>
+        <div><p>Top search words on given keyword</p></div>
+        
+        {% for table in table2 %}
+        <div id="trends2">{{ table|safe }}</div>
+        {% endfor %}
+        </div>
+</body>
+</html>
